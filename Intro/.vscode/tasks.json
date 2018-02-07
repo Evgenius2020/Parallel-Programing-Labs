@@ -1,0 +1,25 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build hello-world.c",
+            "type": "shell",
+            "command": "mpicc",
+            "args": [
+                "./hello-world.c"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "build messages.c",
+            "type": "shell",
+            "command": "mpicc",
+            "args": [
+                "./messages.c"
+            ],
+            "group": "build"
+        }
+    ]
+}
