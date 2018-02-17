@@ -26,12 +26,7 @@ void print_vector(int *vector, int size)
     printf("\n");
 }
 
-int *init_vector(int start_value, int size)
+int *init_vector(int size)
 {
-    int *vector = malloc(sizeof(int) * size);
-    for (int i = 0; i < size; i++)
-    {
-        vector[i] = start_value + i;
-    }
-    return vector;
+    return calloc(size, sizeof(int));
 }
