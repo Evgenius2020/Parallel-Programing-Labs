@@ -1,4 +1,4 @@
-void matrix_x_vector(float *matrix_part, int part_size, float *vector, float *result, int size);
+float scalar_vector_x_vector(float *left, float *right, int size);
 void vector_sub_vector(float* left, float* right, int size);
 void vector_x_scalar(float *vector, float scalar, int size);
 float vector_norm(float *vector, int size);

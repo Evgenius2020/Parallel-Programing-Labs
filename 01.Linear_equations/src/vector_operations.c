@@ -1,24 +1,15 @@
-#include <mpi.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "mpi_vectors_lib.h"
 
-void matrix_x_vector(float *matrix_part, int part_size, float *vector, float *result, int size)
+float scalar_vector_x_vector(float *left, float *right, int size)
 {
-    int comm_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank);
-
-    for (int i = 0; i < part_size; i++)
+    float result = 0;
+    for (int i = 0; i < size; i++)
     {
-        int line = comm_rank * part_size + i;
-        result[line] = 0;
-        for (int j = 0; j < size; j++)
-        {
-            result[line] += matrix_part[i * size + j] * vector[j];
-        }
+        result += left[i] * right[i];
     }
-    MPI_Allgather(result + comm_rank * part_size, part_size, MPI_FLOAT, result, part_size, MPI_FLOAT, MPI_COMM_WORLD);
+    return result;
 }
 
 void vector_sub_vector(float *left, float *right, int size)

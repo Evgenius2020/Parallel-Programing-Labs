@@ -1,10 +1,9 @@
 #include <mpi.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include "mpi_vectors_lib.h"
+#include "linear_equations_solving.h"
 
-#define N 32
-#define EPSILON 10e-7
+#define N 8
+#define EPSILON 10e-5
 #define TAU 0.01
 
 void main(int argc, char *argv[])
@@ -25,38 +24,8 @@ void main(int argc, char *argv[])
         return;
     }
 
-    float *part = init_vector(part_size * N);
-    for (int i = 0; i < part_size * N; i++)
-    {
-        // "2" for main diagonal elements.
-        part[i] = (i % N == comm_rank * part_size + i / N) ? 2 : 1;
-    }
-    float *x = init_vector(N);
-    float *b = init_vector(N);
-    for (int i = 0; i < N; b[i++] = N + 1)
-        ;
-    float *buf = init_vector(N);
+    //  solve(comm_size, comm_rank, part_size, N, TAU, EPSILON);
+    solve_partial(comm_size, comm_rank, part_size, N, TAU, EPSILON);
 
-    while (1)
-    {
-        matrix_x_vector(part, part_size, x, buf, N);
-        vector_sub_vector(buf, b, N);
-        float buf_norm = vector_norm(buf, N);
-        float b_norm = vector_norm(b, N);
-        if (buf_norm / b_norm < EPSILON)
-        {
-            break;
-        }
-        vector_x_scalar(buf, TAU, N);
-        vector_sub_vector(x, buf, N);
-    }
-    if (comm_rank == 0)
-    {
-        print_vector(x, N);
-    }
-
-    free(part);
-    free(x);
-    free(b);
     MPI_Finalize();
 }
