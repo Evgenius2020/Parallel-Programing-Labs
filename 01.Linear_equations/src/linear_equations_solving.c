@@ -101,19 +101,33 @@ void part_matrix_x_vector(float *matrix_part, float *vector_part, float *result,
 void solve_partial(int comm_size, int comm_rank, int part_size, int N, float TAU, float EPSILON)
 {
     float *matrix_part = init_working_part(part_size, N, comm_rank);
-    float *x = init_vector(part_size);
-    float *b = init_vector(part_size);
-    float *part_buf = init_vector(part_size);
-    for (int i = 0; i < part_size; b[i++] = N + 1)
+    float *x_part = init_vector(part_size);
+    float *b_part = init_vector(part_size);
+    float *buf_part = init_vector(part_size);
+    for (int i = 0; i < part_size; b_part[i++] = N + 1)
         ;
 
-    float b_norm = part_vector_norm(b, part_size, comm_rank, comm_size);
-    part_matrix_x_vector(matrix_part, b, part_buf, part_size, N, comm_rank, comm_size);
-    print_vector(part_buf, part_size);
-    print_vector(b, part_size);
+    float b_norm = part_vector_norm(b_part, part_size, comm_rank, comm_size);
+    while (1)
+    {
+        part_matrix_x_vector(matrix_part, x_part, buf_part, part_size, N, comm_rank, comm_size);
+        vector_sub_vector(buf_part, b_part, part_size);
+        float buf_norm = part_vector_norm(buf_part, part_size, comm_rank, comm_size);
+        // if (comm_rank == 0)
+        // {
+        //     printf("%f\n", buf_norm / b_norm);
+        // }
+        if (buf_norm / b_norm < EPSILON)
+        {
+            break;
+        }
+        vector_x_scalar(buf_part, TAU, part_size);
+        vector_sub_vector(x_part, buf_part, part_size);
+    }
+    print_vector(x_part, part_size);
 
     free(matrix_part);
-    free(x);
-    free(b);
-    free(part_buf);
+    free(x_part);
+    free(b_part);
+    free(buf_part);
 }

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "linear_equations_solving.h"
 
-#define N 8
+#define N 32
 #define EPSILON 10e-5
 #define TAU 0.01
 
