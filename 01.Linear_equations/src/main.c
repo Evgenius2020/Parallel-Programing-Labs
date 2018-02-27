@@ -2,9 +2,7 @@
 #include <stdio.h>
 #include "linear_equations_solving.h"
 
-#define N 32
-#define EPSILON 10e-5
-#define TAU 0.01
+#define N 5000
 
 void main(int argc, char *argv[])
 {
@@ -24,8 +22,8 @@ void main(int argc, char *argv[])
         return;
     }
 
-    //  solve(comm_size, comm_rank, part_size, N, TAU, EPSILON);
-    solve_partial(comm_size, comm_rank, part_size, N, TAU, EPSILON);
+    // solve(comm_size, comm_rank, part_size, N);
+    solve_partial(comm_size, comm_rank, part_size, N);
 
     MPI_Finalize();
 }

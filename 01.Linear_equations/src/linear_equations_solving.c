@@ -4,6 +4,9 @@
 #include <math.h>
 #include "vector_operations.h"
 
+#define EPSILON 10e-5
+#define TAU 0.0001
+
 float *init_working_part(int part_size, int N, int comm_rank)
 {
     float *part = init_vector(part_size * N);
@@ -25,7 +28,7 @@ void matrix_x_vector(float *matrix_part, int part_size, float *vector, float *re
     MPI_Allgather(result + comm_rank * part_size, part_size, MPI_FLOAT, result, part_size, MPI_FLOAT, MPI_COMM_WORLD);
 }
 
-void solve(int comm_size, int comm_rank, int part_size, int N, float TAU, float EPSILON)
+void solve(int comm_size, int comm_rank, int part_size, int N)
 {
     float *part = init_working_part(part_size, N, comm_rank);
     float *x = init_vector(N);
@@ -98,7 +101,7 @@ void part_matrix_x_vector(float *matrix_part, float *vector_part, float *result,
     } while (curr_part_n != comm_rank);
 }
 
-void solve_partial(int comm_size, int comm_rank, int part_size, int N, float TAU, float EPSILON)
+void solve_partial(int comm_size, int comm_rank, int part_size, int N)
 {
     float *matrix_part = init_working_part(part_size, N, comm_rank);
     float *x_part = init_vector(part_size);
