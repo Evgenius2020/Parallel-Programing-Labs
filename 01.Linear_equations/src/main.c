@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "linear_equations_solving.h"
 
-#define N 5000
+#define N 10000
 
 void main(int argc, char *argv[])
 {
@@ -22,8 +22,8 @@ void main(int argc, char *argv[])
         return;
     }
 
-    // solve(comm_size, comm_rank, part_size, N);
-    solve_partial(comm_size, comm_rank, part_size, N);
+    solve(comm_size, comm_rank, part_size, N);
+    // solve_partial(comm_size, comm_rank, part_size, N);
 
     MPI_Finalize();
 }

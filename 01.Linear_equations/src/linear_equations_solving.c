@@ -4,8 +4,8 @@
 #include <math.h>
 #include "vector_operations.h"
 
-#define EPSILON 10e-5
-#define TAU 0.0001
+#define EPSILON 0.0001
+#define TAU 0.00001
 
 float *init_working_part(int part_size, int N, int comm_rank)
 {
@@ -43,10 +43,6 @@ void solve(int comm_size, int comm_rank, int part_size, int N)
         matrix_x_vector(part, part_size, x, buf, N, comm_rank);
         vector_sub_vector(buf, b, N);
         float buf_norm = vector_norm(buf, N);
-        // if (comm_rank == 0)
-        // {
-        //     printf("%f\n", buf_norm / b_norm);
-        // }
         if (buf_norm / b_norm < EPSILON)
         {
             break;
@@ -116,10 +112,6 @@ void solve_partial(int comm_size, int comm_rank, int part_size, int N)
         part_matrix_x_vector(matrix_part, x_part, buf_part, part_size, N, comm_rank, comm_size);
         vector_sub_vector(buf_part, b_part, part_size);
         float buf_norm = part_vector_norm(buf_part, part_size, comm_rank, comm_size);
-        // if (comm_rank == 0)
-        // {
-        //     printf("%f\n", buf_norm / b_norm);
-        // }
         if (buf_norm / b_norm < EPSILON)
         {
             break;
