@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "linear_equations_solving.h"
 
-#define N 10000
+#define N 100
 
 void main(int argc, char *argv[])
 {

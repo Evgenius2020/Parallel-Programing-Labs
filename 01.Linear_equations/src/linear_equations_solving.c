@@ -4,13 +4,14 @@
 #include <math.h>
 #include "vector_operations.h"
 
-#define EPSILON 0.0001
-#define TAU 0.00001
+#define EPSILON 0.01
+#define TAU 0.001
 
 float *init_working_part(int part_size, int N, int comm_rank)
 {
     float *part = init_vector(part_size * N);
-    for (int i = 0; i < part_size * N; i++)
+    int i;
+    for (i = 0; i < part_size * N; i++)
     {
         // "2" for main diagonal elements.)
         part[i] = (i % N == comm_rank * part_size + i / N) ? 2 : 1;
@@ -18,14 +19,16 @@ float *init_working_part(int part_size, int N, int comm_rank)
     return part;
 }
 
-void matrix_x_vector(float *matrix_part, int part_size, float *vector, float *result, int size, int comm_rank)
+void matrix_x_vector(float *matrix_part, int part_size, float *vector, float *allgather_buf, float *result, int size, int comm_rank)
 {
-    for (int i = 0; i < part_size; i++)
+    int i;
+    for (i = 0; i < part_size; i++)
     {
         int line = comm_rank * part_size + i;
-        result[line] = scalar_vector_x_vector(matrix_part + i * size, vector, size);
+        allgather_buf[line] = scalar_vector_x_vector(matrix_part + i * size, vector, size);
     }
-    MPI_Allgather(result + comm_rank * part_size, part_size, MPI_FLOAT, result, part_size, MPI_FLOAT, MPI_COMM_WORLD);
+    
+    MPI_Allgather(allgather_buf + comm_rank * part_size, part_size, MPI_FLOAT, result, part_size, MPI_FLOAT, MPI_COMM_WORLD);
 }
 
 void solve(int comm_size, int comm_rank, int part_size, int N)
@@ -33,14 +36,16 @@ void solve(int comm_size, int comm_rank, int part_size, int N)
     float *part = init_working_part(part_size, N, comm_rank);
     float *x = init_vector(N);
     float *b = init_vector(N);
-    for (int i = 0; i < N; b[i++] = N + 1)
+    int i;
+    for (i = 0; i < N; b[i++] = N + 1)
         ;
     float *buf = init_vector(N);
+    float *allgather_buf = init_vector(N); // Intel compiler specific.
 
     float b_norm = vector_norm(b, N);
     while (1)
     {
-        matrix_x_vector(part, part_size, x, buf, N, comm_rank);
+        matrix_x_vector(part, part_size, x, allgather_buf, buf, N, comm_rank);
         vector_sub_vector(buf, b, N);
         float buf_norm = vector_norm(buf, N);
         if (buf_norm / b_norm < EPSILON)
@@ -58,6 +63,8 @@ void solve(int comm_size, int comm_rank, int part_size, int N)
     free(part);
     free(x);
     free(b);
+    free(buf);
+    free(allgather_buf);
 }
 
 void mpi_ring_send_recv(float *vector, int size, int tag, int comm_rank, int comm_size)
@@ -71,7 +78,8 @@ float part_vector_norm(float *vector, int size, int comm_rank, int comm_size)
 {
     float result = 0;
 
-    for (int i = 0; i < comm_size; i++)
+    int i;
+    for (i = 0; i < comm_size; i++)
     {
         result += scalar_vector_x_vector(vector, vector, size);
         mpi_ring_send_recv(vector, size, 123, comm_rank, comm_size);
@@ -82,12 +90,13 @@ float part_vector_norm(float *vector, int size, int comm_rank, int comm_size)
 
 void part_matrix_x_vector(float *matrix_part, float *vector_part, float *result, int part_size, int line_size, int comm_rank, int comm_size)
 {
-    for (int part = 0; part < part_size; result[part++] = 0)
+    int part;
+    for (part = 0; part < part_size; result[part++] = 0)
         ;
     int curr_part_n = comm_rank;
     do
     {
-        for (int part = 0; part < part_size; part++)
+        for (part = 0; part < part_size; part++)
         {
             int shift = part * line_size + curr_part_n * part_size;
             result[part] += scalar_vector_x_vector(matrix_part + shift, vector_part, part_size);
@@ -103,7 +112,8 @@ void solve_partial(int comm_size, int comm_rank, int part_size, int N)
     float *x_part = init_vector(part_size);
     float *b_part = init_vector(part_size);
     float *buf_part = init_vector(part_size);
-    for (int i = 0; i < part_size; b_part[i++] = N + 1)
+    int i;
+    for (i = 0; i < part_size; b_part[i++] = N + 1)
         ;
 
     float b_norm = part_vector_norm(b_part, part_size, comm_rank, comm_size);
