@@ -1,0 +1,1 @@
+# OpenMP realization of solving linear equations (lab 1).
