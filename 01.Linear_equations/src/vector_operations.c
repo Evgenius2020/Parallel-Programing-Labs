@@ -1,10 +1,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "vector_operations.h"
 
-float scalar_vector_x_vector(float *left, float *right, int size)
+double scalar_vector_x_vector(double *left, double *right, int size)
 {
-    float result = 0;
+    double result = 0;
     int i;
     for (i = 0; i < size; i++)
     {
@@ -13,7 +14,7 @@ float scalar_vector_x_vector(float *left, float *right, int size)
     return result;
 }
 
-void vector_sub_vector(float *left, float *right, int size)
+void vector_sub_vector(double *left, double *right, int size)
 {
     int i;
     for (i = 0; i < size; i++)
@@ -22,9 +23,9 @@ void vector_sub_vector(float *left, float *right, int size)
     }
 }
 
-float vector_norm(float *vector, int size)
+double vector_norm(double *vector, int size)
 {
-    float result = 0;
+    double result = 0;
     int i;
     for (i = 0; i < size; i++)
     {
@@ -33,7 +34,7 @@ float vector_norm(float *vector, int size)
     return sqrt(result);
 }
 
-void vector_x_scalar(float *vector, float scalar, int size)
+void vector_x_scalar(double *vector, double scalar, int size)
 {
     int i;
     for (i = 0; i < size; i++)
@@ -42,7 +43,7 @@ void vector_x_scalar(float *vector, float scalar, int size)
     }
 }
 
-void print_vector(float *vector, int size)
+void print_vector(double *vector, int size)
 {
     int i;
     for (i = 0; i < size; i++)
@@ -52,7 +53,7 @@ void print_vector(float *vector, int size)
     printf("\n");
 }
 
-float *init_vector(int size)
+double *init_vector(int size)
 {
-    return calloc(size, sizeof(float));
+    return calloc(size, sizeof(double));
 }

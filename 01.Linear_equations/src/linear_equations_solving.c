@@ -7,9 +7,9 @@
 #define EPSILON 0.01
 #define TAU 0.001
 
-float *init_working_part(int part_size, int N, int comm_rank)
+double *init_working_part(int part_size, int N, int comm_rank)
 {
-    float *part = init_vector(part_size * N);
+    double *part = init_vector(part_size * N);
     int i;
     for (i = 0; i < part_size * N; i++)
     {
@@ -19,7 +19,7 @@ float *init_working_part(int part_size, int N, int comm_rank)
     return part;
 }
 
-void matrix_x_vector(float *matrix_part, int part_size, float *vector, float *allgather_buf, float *result, int size, int comm_rank)
+void matrix_x_vector(double *matrix_part, int part_size, double *vector, double *allgather_buf, double *result, int size, int comm_rank)
 {
     int i;
     for (i = 0; i < part_size; i++)
@@ -28,26 +28,26 @@ void matrix_x_vector(float *matrix_part, int part_size, float *vector, float *al
         allgather_buf[line] = scalar_vector_x_vector(matrix_part + i * size, vector, size);
     }
     
-    MPI_Allgather(allgather_buf + comm_rank * part_size, part_size, MPI_FLOAT, result, part_size, MPI_FLOAT, MPI_COMM_WORLD);
+    MPI_Allgather(allgather_buf + comm_rank * part_size, part_size, MPI_DOUBLE, result, part_size, MPI_DOUBLE, MPI_COMM_WORLD);
 }
 
 void solve(int comm_size, int comm_rank, int part_size, int N)
 {
-    float *part = init_working_part(part_size, N, comm_rank);
-    float *x = init_vector(N);
-    float *b = init_vector(N);
+    double *part = init_working_part(part_size, N, comm_rank);
+    double *x = init_vector(N);
+    double *b = init_vector(N);
     int i;
     for (i = 0; i < N; b[i++] = N + 1)
         ;
-    float *buf = init_vector(N);
-    float *allgather_buf = init_vector(N); // Intel compiler specific.
+    double *buf = init_vector(N);
+    double *allgather_buf = init_vector(N); // Intel compiler specific.
 
-    float b_norm = vector_norm(b, N);
+    double b_norm = vector_norm(b, N);
     while (1)
     {
         matrix_x_vector(part, part_size, x, allgather_buf, buf, N, comm_rank);
         vector_sub_vector(buf, b, N);
-        float buf_norm = vector_norm(buf, N);
+        double buf_norm = vector_norm(buf, N);
         if (buf_norm / b_norm < EPSILON)
         {
             break;
@@ -67,16 +67,16 @@ void solve(int comm_size, int comm_rank, int part_size, int N)
     free(allgather_buf);
 }
 
-void mpi_ring_send_recv(float *vector, int size, int tag, int comm_rank, int comm_size)
+void mpi_ring_send_recv(double *vector, int size, int tag, int comm_rank, int comm_size)
 {
-    MPI_Sendrecv_replace(vector, size, MPI_FLOAT,
+    MPI_Sendrecv_replace(vector, size, MPI_DOUBLE,
                          (comm_rank + 1) % comm_size, 123, (comm_rank + comm_size - 1) % comm_size, 123,
                          MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 
-float part_vector_norm(float *vector, int size, int comm_rank, int comm_size)
+double part_vector_norm(double *vector, int size, int comm_rank, int comm_size)
 {
-    float result = 0;
+    double result = 0;
 
     int i;
     for (i = 0; i < comm_size; i++)
@@ -88,7 +88,7 @@ float part_vector_norm(float *vector, int size, int comm_rank, int comm_size)
     return sqrt(result);
 }
 
-void part_matrix_x_vector(float *matrix_part, float *vector_part, float *result, int part_size, int line_size, int comm_rank, int comm_size)
+void part_matrix_x_vector(double *matrix_part, double *vector_part, double *result, int part_size, int line_size, int comm_rank, int comm_size)
 {
     int part;
     for (part = 0; part < part_size; result[part++] = 0)
@@ -108,20 +108,20 @@ void part_matrix_x_vector(float *matrix_part, float *vector_part, float *result,
 
 void solve_partial(int comm_size, int comm_rank, int part_size, int N)
 {
-    float *matrix_part = init_working_part(part_size, N, comm_rank);
-    float *x_part = init_vector(part_size);
-    float *b_part = init_vector(part_size);
-    float *buf_part = init_vector(part_size);
+    double *matrix_part = init_working_part(part_size, N, comm_rank);
+    double *x_part = init_vector(part_size);
+    double *b_part = init_vector(part_size);
+    double *buf_part = init_vector(part_size);
     int i;
     for (i = 0; i < part_size; b_part[i++] = N + 1)
         ;
 
-    float b_norm = part_vector_norm(b_part, part_size, comm_rank, comm_size);
+    double b_norm = part_vector_norm(b_part, part_size, comm_rank, comm_size);
     while (1)
     {
         part_matrix_x_vector(matrix_part, x_part, buf_part, part_size, N, comm_rank, comm_size);
         vector_sub_vector(buf_part, b_part, part_size);
-        float buf_norm = part_vector_norm(buf_part, part_size, comm_rank, comm_size);
+        double buf_norm = part_vector_norm(buf_part, part_size, comm_rank, comm_size);
         if (buf_norm / b_norm < EPSILON)
         {
             break;

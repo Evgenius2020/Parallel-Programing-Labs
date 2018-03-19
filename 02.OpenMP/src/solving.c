@@ -7,7 +7,7 @@
 // choose one of them.
 #include "vector_operations.h"
 
-#define N 10000
+#define N 1333
 
 #define EPSILON 0.0001
 #define TAU 0.00001
@@ -15,7 +15,7 @@
 void main()
 {
     omp_set_dynamic(0);
-    omp_set_num_threads(2);
+    omp_set_num_threads(4);
 
     float *A, *x, *b, *buf;
     int i;
