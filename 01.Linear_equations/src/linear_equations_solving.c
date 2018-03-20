@@ -54,14 +54,8 @@ void solve(unsigned N)
 {
     unsigned process_count;
     MPI_Comm_size(MPI_COMM_WORLD, &process_count);
-    process_count = process_count > N ? N : process_count;
-
     unsigned process_id;
     MPI_Comm_rank(MPI_COMM_WORLD, &process_id);
-    if (process_id >= process_count)
-    {
-        return;
-    }
 
     unsigned part_size = calculate_part_size(N, process_count);
     unsigned N_extended = part_size * process_count;
