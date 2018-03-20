@@ -15,3 +15,12 @@ In the "src/linear_equations_solving.c" file you can find main MPI-based functio
 
 Every MPI-proccess working with part of A matrix.
 After calculating, first process prints x vector.
+
+## Instalation
+
+`make build`
+## Start
+#### Run basic algoritm for N=6, using 6 mpi-processes.
+`mpiexec -n 6 ./out/a.out 6`
+#### Run partial algoritm for N=6, using 3 mpi-processes.
+`mpiexec -n 3 ./out/a.out 6 -p`
