@@ -120,7 +120,7 @@ double part_vector_norm(double *vector, unsigned part_size, unsigned process_id,
     return sqrt(result);
 }
 
-void part_matrix_x_vector(double *matrix_part, double *vector_part, double *result, int part_size, unsigned line_size, unsigned process_id, unsigned process_count)
+void part_matrix_x_vector(double *matrix_part, double *vector_part, double *result, unsigned part_size, unsigned line_size, unsigned process_id, unsigned process_count)
 {
     unsigned line;
     for (line = 0; line < part_size; line++)
