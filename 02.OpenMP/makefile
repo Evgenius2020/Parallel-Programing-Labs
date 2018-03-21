@@ -3,12 +3,12 @@ clean:
 
 build_sequent:
 	mkdir -p ./out
-	gcc src/main.c src/solve.c src/vector_operations_sequent.c -lm -o out/a.out -D BUILD_SEQUENT
+	gcc src/*.c -lm -o out/a.out -D BUILD_SEQUENT
 
 build_omp_hard:
 	mkdir -p ./out
-	gcc src/main.c src/solve.c src/vector_operations_omp.c -lm -fopenmp -o out/a.out
+	gcc src/*.c -lm -o out/a.out -D BUILD_OMP_HARD -fopenmp
 
 build_omp_light:
 	mkdir -p ./out
-	gcc src/main.c src/solve.c src/vector_operations_sequent.c -lm -fopenmp -o out/a.out -D BUILD_OMP_LIGHT
+	gcc src/*.c -lm -o out/a.out -D BUILD_OMP_LIGHT -fopenmp
