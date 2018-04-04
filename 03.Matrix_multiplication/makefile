@@ -3,4 +3,7 @@ clear:
 
 build:
 	mkdir -p out
-	gcc ./src/*.* -lm -o ./out/a.out
+	mpicc ./src/*.* -lm -o ./out/a.out
+
+run:
+	mpirun -n 4 ./out/a.out
