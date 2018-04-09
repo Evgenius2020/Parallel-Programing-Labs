@@ -34,7 +34,7 @@
                 "/usr/lib/llvm-3.8/lib/clang/3.8.0/include",
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include",
-                "/usr/include/mpich"
+                "/usr/lib/openmpi/include"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",

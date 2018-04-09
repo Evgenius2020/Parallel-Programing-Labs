@@ -6,7 +6,7 @@
 #include "vector_operations.h"
 
 #define EPSILON 0.1
-#define TAU 0.01
+#define TAU 0.001
 #define SEND_RECV_TAG 123
 
 unsigned calculate_part_size(unsigned N, unsigned process_count)
