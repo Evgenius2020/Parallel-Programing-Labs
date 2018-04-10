@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h> // memcpy
 #include "matrix_operations.h"
 #include "vector_operations.h"
 
@@ -9,16 +8,6 @@ Matrix *create_matrix(unsigned height, unsigned width)
     result->height = height;
     result->width = width;
     result->data = malloc(sizeof(double) * height * width);
-
-    return result;
-}
-
-Matrix *create_matrix_initialized(unsigned height, unsigned width, double *data)
-{
-    Matrix *result = malloc(sizeof(Matrix));
-    result->height = height;
-    result->width = width;
-    result->data = data;
 
     return result;
 }
@@ -60,28 +49,6 @@ void matrix_x_transposed_matrix(Matrix *left, Matrix *transposed_right, Matrix *
                 left->data + left->width * i,
                 transposed_right->data + transposed_right->width * j,
                 left->width);
-        }
-    }
-}
-
-Matrix *create_line_submatrix(Matrix *source, unsigned line_size, unsigned lines_start, unsigned lines_count)
-{
-    double *data = malloc(sizeof(double) * line_size * lines_count);
-    memcpy(
-        data,
-        source->data + line_size * lines_start,
-        line_size * lines_count * sizeof(double));
-    return create_matrix_initialized(lines_count, line_size, data);
-}
-
-void *put_submatrix(Matrix *dest, Matrix *src, unsigned lines_start, unsigned columns_start)
-{
-    unsigned i, j;
-    for (i = 0; i < src->height; i++)
-    {
-        for (j = 0; j < src->width; i++)
-        {
-            dest->data[(i + lines_start) * src->width + columns_start + j] = src->data[i * src->width + j];
         }
     }
 }
