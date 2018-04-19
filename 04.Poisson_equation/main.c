@@ -1,44 +1,92 @@
-#include <stdio.h>
+#include <mpi.h>
+#include <math.h>
+#include <stdlib.h>
 
-#define X_max 10
-#define X_step 0.1
-
-double phi(int x)
+double phi(double x, double y)
 {
-    return x * x * x * X_step + 30 * x * x * X_step;
+    return 0.3 * pow(x, 3) + 0, 7 * pow(x, 2) - 0.4 * pow(y, 3);
 }
 
-void main()
+void main(int argc, char *argv[])
 {
-    double phi_v[X_max];
-    double rho_v[X_max];
-    unsigned i;
-    printf("Printing phi vector:\n");
-    for (i = 0; i < X_max; i++)
-    {
-        phi_v[i] = phi(i);
-        printf("%.2e ", phi_v[i]);        
-    }
-    printf("\n\n");
+    MPI_Init(&argc, &argv);
 
-    printf("Printing rho vector:\n");
-    for (i = 0; i < X_max; i++)
-    {
-        double prev_phi = (i == 0) ? phi(-1) : phi_v[i - 1];
-        double curr_phi = phi_v[i];
-        double next_phi = (i == X_max - 1) ? phi(X_max) : phi_v[i + 1];
-        rho_v[i] = (prev_phi - 2 * curr_phi + next_phi) / (X_step * X_step);
-        printf("%.2e ", rho_v[i]);
-    }
-    printf("\n\n");
+    double x_global_start = -1;
+    double y_global_start = -1;
+    double x_size = 2;
+    double y_size = 2;
+    double x_step = 0.1;
+    double y_step = 0.1;
 
-    printf("Printing phi vector, obtained from rho:\n");
-    for (i = 0; i < X_max; i++)
+    unsigned processes_count, process_id;
+    MPI_Comm_size(MPI_COMM_WORLD, &processes_count);
+    MPI_Comm_rank(MPI_COMM_WORLD, &process_id);
+
+    // ====== Building 2d topology. =====================================================
+    MPI_Comm comm_2d;
+    unsigned comm_2d_sizes[2] = {0, 0};
+    unsigned comm_2d_period_flags[2] = {0, 0};
+    unsigned comm_2d_position[2];
+    MPI_Dims_create(processes_count, 2, comm_2d_sizes);
+    MPI_Cart_create(MPI_COMM_WORLD, 2, comm_2d_sizes, comm_2d_period_flags, 0, &comm_2d);
+    MPI_Cart_get(comm_2d, 2, comm_2d_sizes, comm_2d_period_flags, comm_2d_position);
+    // ----------------------------------------------------------------------------------
+
+    // ====== Setting up operating range. ===============================================
+    double x_local_range_size = x_size / comm_2d_sizes[0];
+    double x_local_start = x_global_start + comm_2d_position[0] * x_local_range_size;
+
+    double y_local_range_size = y_size / comm_2d_sizes[1];
+    double y_local_start = y_global_start + comm_2d_position[1] * y_local_range_size;
+    // ----------------------------------------------------------------------------------
+
+    // ====== Building a rho-matrix. ====================================================
+    unsigned rho_matrix_width = x_local_range_size / x_step;
+    unsigned rho_matrix_heigth = y_local_range_size / y_step;
+    double *rho_matrix = calloc(sizeof(double), rho_matrix_width * rho_matrix_heigth);
+
+    unsigned i, j;
+    for (i = 0; i < rho_matrix_heigth; i++)
     {
-        double prev_phi = (i == 0) ? phi(-1) : phi_v[i - 1];
-        double next_phi = (i == X_max - 1) ? phi(X_max) : phi_v[i + 1];
-        phi_v[i] = (prev_phi + next_phi - (X_step * X_step) * rho_v[i]) / 2;
-        printf("%.2e ", phi_v[i]);
+        for (j = 0; j < rho_matrix_width; j++)
+        {
+            double x = x_local_start + j * x_step;
+            double x_prev = x_local_start + (j - 1) * x_step;
+            double x_next = x_local_start + (j + 1) * x_step;
+            double y = y_local_start + i * y_step;
+            double y_prev = y_local_start + (i - 1) * y_step;
+            double y_next = y_local_start + (i + 1) * y_step;
+
+            double phi_center = phi(x, y);
+            double phi_left = phi(x_prev, y);
+            double phi_right = phi(x_next, y);
+            double phi_bottom = phi(x, y_next);
+            double phi_top = phi(x, y_prev);
+
+            rho_matrix[i * rho_matrix_width + j] =
+                (phi_left + phi_right - 2 * phi_center) /
+                    pow(x_step, 2) +
+                (phi_bottom + phi_top - 2 * phi_center) /
+                    pow(y_step, 2);
+        }
     }
-    printf("\n\n");
+    // ----------------------------------------------------------------------------------
+
+    // ====== Creating phi-matrix and exchange buffers. =================================
+    double *phi_matrix = calloc(sizeof(double), rho_matrix_width * rho_matrix_heigth);
+    double *receive_buffer_top = calloc(sizeof(double), rho_matrix_width);
+    double *receive_buffer_bottom = calloc(sizeof(double), rho_matrix_width);
+    double *receive_buffer_left = calloc(sizeof(double), rho_matrix_heigth);
+    double *receive_buffer_right = calloc(sizeof(double), rho_matrix_heigth);
+    double *send_buffer_top = calloc(sizeof(double), rho_matrix_width);
+    double *send_buffer_bottom = calloc(sizeof(double), rho_matrix_width);
+    double *send_buffer_left = calloc(sizeof(double), rho_matrix_heigth);
+    double *send_buffer_right = calloc(sizeof(double), rho_matrix_heigth);
+
+    // ----------------------------------------------------------------------------------
+
+    free(rho_matrix);
+    free(phi_matrix);
+
+    MPI_Finalize();
 }
