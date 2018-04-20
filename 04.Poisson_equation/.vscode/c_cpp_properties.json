@@ -53,7 +53,7 @@
                 "databaseFilename": ""
             },
             "compilerPath": "/usr/bin/clang",
-            "cStandard": "c11",
+            "cStandard": "c89",
             "cppStandard": "c++17"
         },
         {
