@@ -8,6 +8,9 @@ double phi(double x, double y)
     return 0.3 * pow(x, 3) + 0, 7 * pow(x, 2) - 0.4 * pow(y, 3);
 }
 
+#define MPI_SEND_TAG 1
+#define MPI_RECV_TAG 2
+
 void main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
@@ -28,9 +31,19 @@ void main(int argc, char *argv[])
     unsigned comm_2d_sizes[2] = {0, 0};
     unsigned comm_2d_period_flags[2] = {0, 0};
     unsigned comm_2d_position[2];
+    int comm_2d_top_neighbour;
+    int comm_2d_bottom_neighbour;
+    int comm_2d_left_neighbour;
+    int comm_2d_right_neighbour;
+    int cart_shift_stub;
+
     MPI_Dims_create(processes_count, 2, comm_2d_sizes);
     MPI_Cart_create(MPI_COMM_WORLD, 2, comm_2d_sizes, comm_2d_period_flags, 0, &comm_2d);
     MPI_Cart_get(comm_2d, 2, comm_2d_sizes, comm_2d_period_flags, comm_2d_position);
+    MPI_Cart_shift(comm_2d, 1, -1, &cart_shift_stub, &comm_2d_top_neighbour);
+    MPI_Cart_shift(comm_2d, 1, 1, &cart_shift_stub, &comm_2d_bottom_neighbour);
+    MPI_Cart_shift(comm_2d, 0, -1, &cart_shift_stub, &comm_2d_left_neighbour);
+    MPI_Cart_shift(comm_2d, 0, 1, &cart_shift_stub, &comm_2d_right_neighbour);
     // ----------------------------------------------------------------------------------
 
     // ====== Setting up operating range. ===============================================
@@ -81,16 +94,12 @@ void main(int argc, char *argv[])
     double *receive_buffer_bottom = calloc(sizeof(double), rho_matrix_local_width);
     double *receive_buffer_left = calloc(sizeof(double), rho_matrix_local_heigth);
     double *receive_buffer_right = calloc(sizeof(double), rho_matrix_local_heigth);
-    double *send_buffer_top = calloc(sizeof(double), rho_matrix_local_width);
-    double *send_buffer_bottom = calloc(sizeof(double), rho_matrix_local_width);
-    double *send_buffer_left = calloc(sizeof(double), rho_matrix_local_heigth);
-    double *send_buffer_right = calloc(sizeof(double), rho_matrix_local_heigth);
     // ----------------------------------------------------------------------------------
 
     // ====== Creating MPI-vector for sending left-right buffers. =======================
-    MPI_Datatype send_buffer_mpi_vector;
+    MPI_Datatype mpi_send_vector;
     MPI_Type_vector(rho_matrix_local_heigth, 1, rho_matrix_local_width, MPI_DOUBLE,
-                    &send_buffer_mpi_vector);
+                    &mpi_send_vector);
     // ----------------------------------------------------------------------------------
 
     for (i = 0; i < rho_matrix_local_heigth; i++)
@@ -103,42 +112,80 @@ void main(int argc, char *argv[])
         }
     }
 
-    if (comm_2d_position[0] == 0)
-    {
-        for (i = 0; i < rho_matrix_local_width; i++)
-        {
-            receive_buffer_left[i] = -1;
-        }
-    }
-    if (comm_2d_position[0] == comm_2d_sizes[0] - 1)
-    {
-        for (i = 0; i < rho_matrix_local_width; i++)
-        {
-            receive_buffer_right[i] = -2;
-        }
-    }
-    if (comm_2d_position[1] == 0)
+    // if (comm_2d_left_neighbour < 0)
+    // {
+    //     for (i = 0; i < rho_matrix_local_width; i++)
+    //     {
+    //         receive_buffer_left[i] = -1;
+    //     }
+    // }
+    // else
+    // {
+    //     MPI_Send(rho_matrix, rho_matrix_local_heigth,
+    //              mpi_send_vector, comm_2d_left_neighbour, MPI_SEND_TAG, comm_2d);
+    //     MPI_Recv(receive_buffer_left, rho_matrix_local_heigth, MPI_DOUBLE,
+    //              comm_2d_left_neighbour, MPI_RECV_TAG, comm_2d, MPI_STATUS_IGNORE);
+    // }
+
+    // if (comm_2d_right_neighbour < 0)
+    // {
+    //     for (i = 0; i < rho_matrix_local_width; i++)
+    //     {
+    //         receive_buffer_right[i] = -2;
+    //     }
+    // }
+    // else
+    // {
+    //     MPI_Send(rho_matrix + rho_matrix_local_width - 1, rho_matrix_local_heigth,
+    //              mpi_send_vector, comm_2d_right_neighbour, MPI_SEND_TAG, comm_2d);
+    //     MPI_Recv(receive_buffer_right, rho_matrix_local_heigth, MPI_DOUBLE,
+    //              comm_2d_right_neighbour, MPI_RECV_TAG, comm_2d, MPI_STATUS_IGNORE);
+    // }
+
+    if (comm_2d_top_neighbour < 0)
     {
         for (i = 0; i < rho_matrix_local_heigth; i++)
         {
             receive_buffer_top[i] = -3;
         }
     }
-    if (comm_2d_position[1] == comm_2d_sizes[1] - 1)
+    else
+    {
+        MPI_Send(rho_matrix, rho_matrix_local_width,
+                 MPI_DOUBLE, comm_2d_top_neighbour, MPI_SEND_TAG, comm_2d);
+        MPI_Recv(receive_buffer_top, rho_matrix_local_width, MPI_DOUBLE,
+                 comm_2d_top_neighbour, MPI_SEND_TAG, comm_2d, MPI_STATUS_IGNORE);
+    }
+
+    if (comm_2d_bottom_neighbour < 0)
     {
         for (i = 0; i < rho_matrix_local_heigth; i++)
         {
             receive_buffer_bottom[i] = -4;
         }
     }
+    else
+    {
+        unsigned last_line = rho_matrix_local_width * (rho_matrix_local_heigth - 1);
+
+        MPI_Send(rho_matrix + last_line, rho_matrix_local_width,
+                 MPI_DOUBLE, comm_2d_bottom_neighbour, MPI_SEND_TAG, comm_2d);
+        MPI_Recv(receive_buffer_bottom, rho_matrix_local_width, MPI_DOUBLE,
+                 comm_2d_bottom_neighbour, MPI_SEND_TAG, comm_2d, MPI_STATUS_IGNORE);
+    }
 
     unsigned k;
     for (k = 0; k < processes_count; k++)
     {
         MPI_Barrier(comm_2d);
-        if (process_id == k)
+        if (comm_2d_position[1] * comm_2d_sizes[0] + comm_2d_position[0] == k)
         {
-            printf("\n=========Process #%d==========\n", process_id);
+            printf("\n=========Process #%d(%d;%d)==========\n",
+                   process_id, comm_2d_position[0], comm_2d_position[1]);
+            printf("Top-neighbour is #%d\n", comm_2d_top_neighbour);
+            printf("Bottom-neighbour is #%d\n", comm_2d_bottom_neighbour);
+            printf("Left-neighbour is #%d\n", comm_2d_left_neighbour);
+            printf("Right-neighbour is #%d\n", comm_2d_right_neighbour);
             printf("RHO-matrix:\n");
             for (i = 0; i < rho_matrix_local_heigth; i++)
             {
@@ -152,23 +199,19 @@ void main(int argc, char *argv[])
 
             printf("send-receive buffers \n");
 
-            printf("(l-send, l-receive, r-send, r-recieve):\n");
+            printf("(l-receive, r-recieve):\n");
             for (i = 0; i < rho_matrix_local_heigth; i++)
             {
-                printf("%.2e ", send_buffer_left[i]);
                 printf("%.2e ", receive_buffer_left[i]);
-                printf("%.2e ", send_buffer_right[i]);
                 printf("%.2e ", receive_buffer_right[i]);
                 printf("\n");
             }
             printf("\n");
 
-            printf("(t-send, t-receive, b-send, b-recieve):\n");
+            printf("(t-receive, b-recieve):\n");
             for (i = 0; i < rho_matrix_local_width; i++)
             {
-                printf("%.2e ", send_buffer_top[i]);
                 printf("%.2e ", receive_buffer_top[i]);
-                printf("%.2e ", send_buffer_bottom[i]);
                 printf("%.2e ", receive_buffer_bottom[i]);
                 printf("\n");
             }
@@ -182,10 +225,6 @@ void main(int argc, char *argv[])
     free(receive_buffer_bottom);
     free(receive_buffer_left);
     free(receive_buffer_right);
-    free(send_buffer_top);
-    free(send_buffer_bottom);
-    free(send_buffer_left);
-    free(send_buffer_right);
 
     MPI_Finalize();
 }
