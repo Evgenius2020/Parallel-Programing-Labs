@@ -8,8 +8,10 @@ double phi(double x, double y)
     return 0.3 * pow(x, 3) + 0, 7 * pow(x, 2) - 0.4 * pow(y, 3);
 }
 
-#define MPI_SEND_TAG 1
-#define MPI_RECV_TAG 2
+#define TOP_BOT_TAG 1
+#define BOT_TOP_TAG 2
+#define LEFT_RIGHT_TAG 3
+#define RIGHT_LEFT_TAG 4
 
 void main(int argc, char *argv[])
 {
@@ -100,6 +102,7 @@ void main(int argc, char *argv[])
     MPI_Datatype mpi_send_vector;
     MPI_Type_vector(rho_matrix_local_heigth, 1, rho_matrix_local_width, MPI_DOUBLE,
                     &mpi_send_vector);
+    MPI_Type_commit(&mpi_send_vector);
     // ----------------------------------------------------------------------------------
 
     for (i = 0; i < rho_matrix_local_heigth; i++)
@@ -112,35 +115,35 @@ void main(int argc, char *argv[])
         }
     }
 
-    // if (comm_2d_left_neighbour < 0)
-    // {
-    //     for (i = 0; i < rho_matrix_local_width; i++)
-    //     {
-    //         receive_buffer_left[i] = -1;
-    //     }
-    // }
-    // else
-    // {
-    //     MPI_Send(rho_matrix, rho_matrix_local_heigth,
-    //              mpi_send_vector, comm_2d_left_neighbour, MPI_SEND_TAG, comm_2d);
-    //     MPI_Recv(receive_buffer_left, rho_matrix_local_heigth, MPI_DOUBLE,
-    //              comm_2d_left_neighbour, MPI_RECV_TAG, comm_2d, MPI_STATUS_IGNORE);
-    // }
+    if (comm_2d_left_neighbour < 0)
+    {
+        for (i = 0; i < rho_matrix_local_width; i++)
+        {
+            receive_buffer_left[i] = -1;
+        }
+    }
+    else
+    {
+        MPI_Send(rho_matrix, 1,
+                 mpi_send_vector, comm_2d_left_neighbour, RIGHT_LEFT_TAG, comm_2d);
+        MPI_Recv(receive_buffer_left, rho_matrix_local_heigth, MPI_DOUBLE,
+                 comm_2d_left_neighbour, LEFT_RIGHT_TAG, comm_2d, MPI_STATUS_IGNORE);
+    }
 
-    // if (comm_2d_right_neighbour < 0)
-    // {
-    //     for (i = 0; i < rho_matrix_local_width; i++)
-    //     {
-    //         receive_buffer_right[i] = -2;
-    //     }
-    // }
-    // else
-    // {
-    //     MPI_Send(rho_matrix + rho_matrix_local_width - 1, rho_matrix_local_heigth,
-    //              mpi_send_vector, comm_2d_right_neighbour, MPI_SEND_TAG, comm_2d);
-    //     MPI_Recv(receive_buffer_right, rho_matrix_local_heigth, MPI_DOUBLE,
-    //              comm_2d_right_neighbour, MPI_RECV_TAG, comm_2d, MPI_STATUS_IGNORE);
-    // }
+    if (comm_2d_right_neighbour < 0)
+    {
+        for (i = 0; i < rho_matrix_local_width; i++)
+        {
+            receive_buffer_right[i] = -2;
+        }
+    }
+    else
+    {
+        MPI_Send(rho_matrix + rho_matrix_local_width - 1, 1,
+                 mpi_send_vector, comm_2d_right_neighbour, LEFT_RIGHT_TAG, comm_2d);
+        MPI_Recv(receive_buffer_right, rho_matrix_local_heigth, MPI_DOUBLE,
+                 comm_2d_right_neighbour, RIGHT_LEFT_TAG, comm_2d, MPI_STATUS_IGNORE);
+    }
 
     if (comm_2d_top_neighbour < 0)
     {
@@ -152,9 +155,9 @@ void main(int argc, char *argv[])
     else
     {
         MPI_Send(rho_matrix, rho_matrix_local_width,
-                 MPI_DOUBLE, comm_2d_top_neighbour, MPI_SEND_TAG, comm_2d);
+                 MPI_DOUBLE, comm_2d_top_neighbour, BOT_TOP_TAG, comm_2d);
         MPI_Recv(receive_buffer_top, rho_matrix_local_width, MPI_DOUBLE,
-                 comm_2d_top_neighbour, MPI_SEND_TAG, comm_2d, MPI_STATUS_IGNORE);
+                 comm_2d_top_neighbour, TOP_BOT_TAG, comm_2d, MPI_STATUS_IGNORE);
     }
 
     if (comm_2d_bottom_neighbour < 0)
@@ -169,9 +172,9 @@ void main(int argc, char *argv[])
         unsigned last_line = rho_matrix_local_width * (rho_matrix_local_heigth - 1);
 
         MPI_Send(rho_matrix + last_line, rho_matrix_local_width,
-                 MPI_DOUBLE, comm_2d_bottom_neighbour, MPI_SEND_TAG, comm_2d);
+                 MPI_DOUBLE, comm_2d_bottom_neighbour, TOP_BOT_TAG, comm_2d);
         MPI_Recv(receive_buffer_bottom, rho_matrix_local_width, MPI_DOUBLE,
-                 comm_2d_bottom_neighbour, MPI_SEND_TAG, comm_2d, MPI_STATUS_IGNORE);
+                 comm_2d_bottom_neighbour, BOT_TOP_TAG, comm_2d, MPI_STATUS_IGNORE);
     }
 
     unsigned k;
@@ -226,5 +229,6 @@ void main(int argc, char *argv[])
     free(receive_buffer_left);
     free(receive_buffer_right);
 
+    MPI_Type_free(&mpi_send_vector);
     MPI_Finalize();
 }
