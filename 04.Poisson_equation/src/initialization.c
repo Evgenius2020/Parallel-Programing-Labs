@@ -46,7 +46,7 @@ void initialize_parameters(Parameters *parameters, int argc, char *argv[],
     parameters->x_range = 2;
     parameters->y_range = 2;
     parameters->x_step = 0.25;
-    parameters->x_step = 0.25;
+    parameters->y_step = 0.25;
     parameters->phi = phi;
 }
 
@@ -104,7 +104,7 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
     {
         for (j = 0; j < matrix_width; j++)
         {
-            rho_matrix[i * matrix_width + j] =
+            phi_matrix[i * matrix_width + j] =
                 matrix_width * matrix_heigth * cart_data.comm_id +
                 i * matrix_width + j;
         }

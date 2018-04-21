@@ -4,11 +4,11 @@
 
 void print_local_data(Cart_Data cart_data, Local_Data local_data)
 {
-    unsigned i, j, k;
+    unsigned i, j, k;    
     for (k = 0; k < cart_data.comm_size; k++)
     {
         MPI_Barrier(cart_data.comm);
-        if (cart_data.Size.y * cart_data.Size.x + cart_data.Pos.x == k)
+        if (cart_data.Size.x * cart_data.Pos.y + cart_data.Pos.x == k)
         {
             printf("\n=========Process #%d(%d;%d)==========\n",
                    cart_data.comm_id, cart_data.Pos.x, cart_data.Pos.y);
@@ -22,7 +22,7 @@ void print_local_data(Cart_Data cart_data, Local_Data local_data)
                 for (j = 0; j < local_data.matrix_width; j++)
                 {
                     printf("%.2e ",
-                           local_data.rho_matrix[i * local_data.matrix_width + j]);
+                           local_data.phi_matrix[i * local_data.matrix_width + j]);
                 }
                 printf("\n");
             }

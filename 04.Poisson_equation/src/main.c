@@ -29,7 +29,6 @@ void main(int argc, char *argv[])
     MPI_Type_commit(&column_datatype);
 
     resolve_neighbours(cart_data, local_data, column_datatype);
-    printf("ffffffff\n");   
     print_local_data(cart_data, local_data);
 
     finalize_local_data(local_data);
