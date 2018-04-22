@@ -11,6 +11,7 @@ typedef struct Parameters
     double y_range;
     double x_step;
     double y_step;
+    double convergence;
     double (*phi)(double x, double y);
 } Parameters;
 
@@ -35,22 +36,27 @@ typedef struct Cart_Data
         int bottom;
         int left;
         int right;
-    } Neighbours;
+    } Neighbors;
 } Cart_Data;
 
 typedef struct Local_Data
 {
-    double *rho_matrix;
-    double *phi_matrix;
+    double *target_matrix;
+    double *curr_matrix;
+    double *next_matrix;
     unsigned matrix_height;
     unsigned matrix_width;
+    // ===== Start point of working range. ==============================================
+    double x_start;
+    double y_start;
+    // ----------------------------------------------------------------------------------
     struct
     {
         double *top;
         double *bottom;
         double *left;
         double *right;
-    } Receive_Buffers;
+    } Neighbors;
 } Local_Data;
 
 #endif

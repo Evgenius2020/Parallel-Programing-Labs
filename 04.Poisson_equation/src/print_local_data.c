@@ -12,17 +12,17 @@ void print_local_data(Cart_Data cart_data, Local_Data local_data)
         {
             printf("\n=========Process #%d(%d;%d)==========\n",
                    cart_data.comm_id, cart_data.Pos.x, cart_data.Pos.y);
-            printf("Top-neighbour is #%d\n", cart_data.Neighbours.top);
-            printf("Bottom-neighbour is #%d\n", cart_data.Neighbours.bottom);
-            printf("Left-neighbour is #%d\n", cart_data.Neighbours.left);
-            printf("Right-neighbour is #%d\n", cart_data.Neighbours.right);
+            printf("Top-neighbour is #%d\n", cart_data.Neighbors.top);
+            printf("Bottom-neighbour is #%d\n", cart_data.Neighbors.bottom);
+            printf("Left-neighbour is #%d\n", cart_data.Neighbors.left);
+            printf("Right-neighbour is #%d\n", cart_data.Neighbors.right);
             printf("RHO-matrix:\n");
             for (i = 0; i < local_data.matrix_height; i++)
             {
                 for (j = 0; j < local_data.matrix_width; j++)
                 {
                     printf("%.2e ",
-                           local_data.phi_matrix[i * local_data.matrix_width + j]);
+                           local_data.curr_matrix[i * local_data.matrix_width + j]);
                 }
                 printf("\n");
             }
@@ -33,8 +33,8 @@ void print_local_data(Cart_Data cart_data, Local_Data local_data)
             printf("(l-receive, r-recieve):\n");
             for (i = 0; i < local_data.matrix_height; i++)
             {
-                printf("%.2e ", local_data.Receive_Buffers.left[i]);
-                printf("%.2e ", local_data.Receive_Buffers.right[i]);
+                printf("%.2e ", local_data.Neighbors.left[i]);
+                printf("%.2e ", local_data.Neighbors.right[i]);
                 printf("\n");
             }
             printf("\n");
@@ -42,8 +42,8 @@ void print_local_data(Cart_Data cart_data, Local_Data local_data)
             printf("(t-receive, b-recieve):\n");
             for (i = 0; i < local_data.matrix_width; i++)
             {
-                printf("%.2e ", local_data.Receive_Buffers.top[i]);
-                printf("%.2e ", local_data.Receive_Buffers.bottom[i]);
+                printf("%.2e ", local_data.Neighbors.top[i]);
+                printf("%.2e ", local_data.Neighbors.bottom[i]);
                 printf("\n");
             }
             printf("\n");
