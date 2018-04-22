@@ -62,11 +62,11 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
 
     // ====== Building a rho-matrix. ====================================================
     unsigned matrix_width = x_local_range_size / parameters.x_step;
-    unsigned matrix_heigth = y_local_range_size / parameters.y_step;
-    double *rho_matrix = calloc(sizeof(double), matrix_width * matrix_heigth);
+    unsigned matrix_height = y_local_range_size / parameters.y_step;
+    double *rho_matrix = calloc(sizeof(double), matrix_width * matrix_height);
 
     unsigned i, j;
-    for (i = 0; i < matrix_heigth; i++)
+    for (i = 0; i < matrix_height; i++)
     {
         for (j = 0; j < matrix_width; j++)
         {
@@ -93,24 +93,53 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
     // ----------------------------------------------------------------------------------
 
     // ====== Creating phi-matrix and exchange buffers. =================================
-    double *phi_matrix = calloc(sizeof(double), matrix_width * matrix_heigth);
+    double *phi_matrix = calloc(sizeof(double), matrix_width * matrix_height);
     double *receive_buffer_top = calloc(sizeof(double), matrix_width);
     double *receive_buffer_bottom = calloc(sizeof(double), matrix_width);
-    double *receive_buffer_left = calloc(sizeof(double), matrix_heigth);
-    double *receive_buffer_right = calloc(sizeof(double), matrix_heigth);
+    double *receive_buffer_left = calloc(sizeof(double), matrix_height);
+    double *receive_buffer_right = calloc(sizeof(double), matrix_height);
     // ----------------------------------------------------------------------------------
 
-    for (i = 0; i < matrix_heigth; i++)
+    // ====== Setting up default phi-values for edge points. ============================
+    if (cart_data.Neighbours.left < 0)
     {
-        for (j = 0; j < matrix_width; j++)
+        double x = parameters.x_start - parameters.x_step;
+        for (i = 0; i < matrix_height; i++)
         {
-            phi_matrix[i * matrix_width + j] =
-                matrix_width * matrix_heigth * cart_data.comm_id +
-                i * matrix_width + j;
+            double y = parameters.y_start + parameters.y_step * i;
+            receive_buffer_left[i] = parameters.phi(x, y);
         }
     }
+    if (cart_data.Neighbours.right < 0)
+    {
+        double x = parameters.x_start + parameters.x_range + parameters.x_step;
+        for (i = 0; i < matrix_height; i++)
+        {
+            double y = parameters.y_start + parameters.y_step * i;
+            receive_buffer_right[i] = parameters.phi(x, y);
+        }
+    }
+    if (cart_data.Neighbours.top < 0)
+    {
+        double y = parameters.y_start - parameters.y_step;
+        for (i = 0; i < matrix_width; i++)
+        {
+            double x = parameters.x_start + parameters.x_step * i;
+            receive_buffer_top[i] = parameters.phi(x, y);
+        }
+    }
+    if (cart_data.Neighbours.bottom < 0)
+    {
+        double y = parameters.y_start + parameters.y_range + parameters.y_step;
+        for (i = 0; i < matrix_width; i++)
+        {
+            double x = parameters.x_start + parameters.x_step * i;
+            receive_buffer_bottom[i] = parameters.phi(x, y);
+        }
+    }
+    // ----------------------------------------------------------------------------------
 
-    local_data->matrix_height = matrix_heigth;
+    local_data->matrix_height = matrix_height;
     local_data->matrix_width = matrix_width;
     local_data->phi_matrix = phi_matrix;
     local_data->rho_matrix = rho_matrix;
