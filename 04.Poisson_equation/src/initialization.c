@@ -51,7 +51,7 @@ void initialize_parameters(Parameters *parameters)
     parameters->y_range = 2;
     parameters->x_step = 0.25;
     parameters->y_step = 0.25;
-    parameters->convergence = 0.01;
+    parameters->convergence = 10e-5;
     parameters->phi = phi;
 }
 

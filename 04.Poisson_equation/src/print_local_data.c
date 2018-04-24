@@ -4,7 +4,7 @@
 
 void print_local_data(Cart_Data cart_data, Local_Data local_data)
 {
-    unsigned i, j, k;    
+    unsigned i, j, k;
     for (k = 0; k < cart_data.comm_size; k++)
     {
         MPI_Barrier(cart_data.comm);
@@ -16,13 +16,24 @@ void print_local_data(Cart_Data cart_data, Local_Data local_data)
             printf("Bottom-neighbour is #%d\n", cart_data.Neighbors.bottom);
             printf("Left-neighbour is #%d\n", cart_data.Neighbors.left);
             printf("Right-neighbour is #%d\n", cart_data.Neighbors.right);
-            printf("RHO-matrix:\n");
+            printf("Curr-matrix:\n");
             for (i = 0; i < local_data.matrix_height; i++)
             {
                 for (j = 0; j < local_data.matrix_width; j++)
                 {
                     printf("%.2e ",
                            local_data.curr_matrix[i * local_data.matrix_width + j]);
+                }
+                printf("\n");
+            }
+            printf("\n");
+            printf("Target-matrix:\n");
+            for (i = 0; i < local_data.matrix_height; i++)
+            {
+                for (j = 0; j < local_data.matrix_width; j++)
+                {
+                    printf("%.2e ",
+                           local_data.target_matrix[i * local_data.matrix_width + j]);
                 }
                 printf("\n");
             }

@@ -21,12 +21,12 @@ void main(int argc, char *argv[])
                     MPI_DOUBLE, &column_datatype);
     MPI_Type_commit(&column_datatype);
 
-    int i = 0;
-    while (step(parameters, cart_data, local_data, column_datatype)) {
-        i++;
-    }
+    while (step(parameters, cart_data, local_data, column_datatype))
+    // {
+    //     print_local_data(cart_data, local_data);
+    // }
+    ;
     print_local_data(cart_data, local_data);
-    printf ("%d", i);
 
     finalize_local_data(local_data);
     MPI_Type_free(&column_datatype);
