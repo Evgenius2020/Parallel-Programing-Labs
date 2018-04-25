@@ -33,7 +33,7 @@ void print_local_data(Cart_Data cart_data, Local_Data local_data)
                 for (j = 0; j < local_data.matrix_width; j++)
                 {
                     printf("%.2e ",
-                           local_data.target_matrix[i * local_data.matrix_width + j]);
+                           local_data.phi_matrix[i * local_data.matrix_width + j]);
                 }
                 printf("\n");
             }

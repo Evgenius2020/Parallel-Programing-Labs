@@ -40,7 +40,12 @@ void initialize_cart_data(Cart_Data *cart_data)
 
 double phi(double x, double y)
 {
-    return pow(x, 2) + pow(y, 2);
+    return pow(x, 3) + pow(y, 3);
+}
+
+double rho(double x, double y)
+{
+    return 6 - 10e5 * phi(x, y);
 }
 
 void initialize_parameters(Parameters *parameters)
@@ -49,50 +54,39 @@ void initialize_parameters(Parameters *parameters)
     parameters->y_start = -1;
     parameters->x_range = 2;
     parameters->y_range = 2;
-    parameters->x_step = 0.25;
-    parameters->y_step = 0.25;
-    parameters->convergence = 10e-5;
+    parameters->x_step = 0.5;
+    parameters->y_step = 0.5;
+    parameters->convergence = 10e-8;
+    parameters->a_coeff = 10e5;
     parameters->phi = phi;
+    parameters->rho = rho;
 }
 
 void initialize_local_data(Parameters parameters, Cart_Data cart_data,
                            Local_Data *local_data)
 {
-    unsigned i, j;
+    int i, j;
 
     // ====== Setting up operating range. ===============================================
     double x_local_range_size = parameters.x_range / cart_data.Size.x;
-    double x_local_start = parameters.x_start + cart_data.Size.x * x_local_range_size;
+    double x_local_start = parameters.x_start + cart_data.Pos.x * x_local_range_size;
     double y_local_range_size = parameters.y_range / cart_data.Size.y;
-    double y_local_start = parameters.y_start + cart_data.Size.y * y_local_range_size;
+    double y_local_start = parameters.y_start + cart_data.Pos.y * y_local_range_size;
     unsigned matrix_width = x_local_range_size / parameters.x_step;
     unsigned matrix_height = y_local_range_size / parameters.y_step;
     // ----------------------------------------------------------------------------------
 
-    // ====== Building a target matrix. =================================================
-    double *target_matrix = calloc(sizeof(double), matrix_width * matrix_height);
+    // ====== Pre-computing values of phi and rho. ======================================
+    double *phi_matrix = calloc(sizeof(double), matrix_width * matrix_height);
+    double *rho_matrix = calloc(sizeof(double), matrix_width * matrix_height);
     for (i = 0; i < matrix_height; i++)
     {
         for (j = 0; j < matrix_width; j++)
         {
             double x = x_local_start + j * parameters.x_step;
-            double x_prev = x_local_start + (j - 1) * parameters.x_step;
-            double x_next = x_local_start + (j + 1) * parameters.x_step;
             double y = y_local_start + i * parameters.y_step;
-            double y_prev = y_local_start + (i - 1) * parameters.y_step;
-            double y_next = y_local_start + (i + 1) * parameters.y_step;
-
-            double phi_center = parameters.phi(x, y);
-            double phi_left = parameters.phi(x_prev, y);
-            double phi_right = parameters.phi(x_next, y);
-            double phi_bottom = parameters.phi(x, y_next);
-            double phi_top = parameters.phi(x, y_prev);
-
-            target_matrix[i * matrix_width + j] =
-                (phi_left + phi_right - 2 * phi_center) /
-                    pow(parameters.x_step, 2) +
-                (phi_bottom + phi_top - 2 * phi_center) /
-                    pow(parameters.y_step, 2);
+            phi_matrix[i * matrix_width + j] = parameters.phi(x, y);
+            rho_matrix[i * matrix_width + j] = parameters.rho(x, y);
         }
     }
     // ----------------------------------------------------------------------------------
@@ -100,8 +94,8 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
     // ====== Building working matrixes and exchange buffers. ===========================
     double *curr_matrix = calloc(sizeof(double), matrix_width * matrix_height);
     double *next_matrix = calloc(sizeof(double), matrix_width * matrix_height);
-    double *receive_buffer_top = calloc(sizeof(double), matrix_width);
     double *receive_buffer_bottom = calloc(sizeof(double), matrix_width);
+    double *receive_buffer_top = calloc(sizeof(double), matrix_width);
     double *receive_buffer_left = calloc(sizeof(double), matrix_height);
     double *receive_buffer_right = calloc(sizeof(double), matrix_height);
     // ----------------------------------------------------------------------------------
@@ -118,7 +112,7 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
     }
     if (cart_data.Neighbors.right < 0)
     {
-        double x = parameters.x_start + parameters.x_range + parameters.x_step;
+        double x = parameters.x_start + parameters.x_range;
         for (i = 0; i < matrix_height; i++)
         {
             double y = parameters.y_start + parameters.y_step * i;
@@ -136,7 +130,7 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
     }
     if (cart_data.Neighbors.bottom < 0)
     {
-        double y = parameters.y_start + parameters.y_range + parameters.y_step;
+        double y = parameters.y_start + parameters.y_range;
         for (i = 0; i < matrix_width; i++)
         {
             double x = parameters.x_start + parameters.x_step * i;
@@ -147,7 +141,8 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
 
     local_data->matrix_height = matrix_height;
     local_data->matrix_width = matrix_width;
-    local_data->target_matrix = target_matrix;
+    local_data->phi_matrix = phi_matrix;
+    local_data->rho_matrix = rho_matrix;
     local_data->curr_matrix = curr_matrix;
     local_data->next_matrix = next_matrix;
     local_data->Neighbors.top = receive_buffer_top;

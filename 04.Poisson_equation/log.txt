@@ -1,0 +1,180 @@
+2.000009e+00
+
+=========Process #0(0;0)==========
+Top-neighbour is #-2
+Bottom-neighbour is #-2
+Left-neighbour is #-2
+Right-neighbour is #1
+2.000009e+00
+Curr-matrix:
+-2.00e+00 -1.13e+00 
+-1.13e+00 -2.50e-01 
+-1.00e+00 -1.25e-01 
+-8.75e-01 -2.50e-06 
+
+Target-matrix:
+-2.00e+00 -1.12e+00 
+-1.12e+00 -2.50e-01 
+-1.00e+00 -1.25e-01 
+-8.75e-01 0.00e+00 
+
+send-receive buffers 
+(l-receive, r-recieve):
+-4.38e+00 0.00e+00 
+-3.50e+00 0.00e+00 
+-3.38e+00 0.00e+00 
+-3.25e+00 0.00e+00 
+
+(t-receive, b-recieve):
+-4.38e+00 0.00e+00 
+-3.50e+00 8.75e-01 
+
+
+=========Process #1(1;0)==========
+Top-neighbour is #-2
+Bottom-neighbour is #-2
+Left-neighbour is #0
+Right-neighbour is #-2
+Curr-matrix:
+-1.00e+00 -8.75e-01 
+-1.25e-01 -2.50e-06 
+-6.00e-06 1.25e-01 
+1.25e-01 2.50e-01 
+
+Target-matrix:
+-1.00e+00 -8.75e-01 
+-1.25e-01 0.00e+00 
+0.00e+00 1.25e-01 
+1.25e-01 2.50e-01 
+
+send-receive buffers 
+(l-receive, r-recieve):
+0.00e+00 0.00e+00 
+0.00e+00 8.75e-01 
+0.00e+00 1.00e+00 
+0.00e+00 1.12e+00 
+
+(t-receive, b-recieve):
+-4.38e+00 0.00e+00 
+-3.50e+00 8.75e-01 
+
+2.299976e-05
+2.299976e-05
+
+=========Process #0(0;0)==========
+Top-neighbour is #-2
+Bottom-neighbour is #-2
+Left-neighbour is #-2
+Right-neighbour is #1
+Curr-matrix:
+-2.00e+00 -1.12e+00 
+-1.12e+00 -2.50e-01 
+-1.00e+00 -1.25e-01 
+-8.75e-01 -6.00e-06 
+
+Target-matrix:
+-2.00e+00 -1.12e+00 
+-1.12e+00 -2.50e-01 
+-1.00e+00 -1.25e-01 
+-8.75e-01 0.00e+00 
+
+send-receive buffers 
+(l-receive, r-recieve):
+-4.38e+00 -1.00e+00 
+-3.50e+00 -1.25e-01 
+-3.38e+00 -6.00e-06 
+-3.25e+00 1.25e-01 
+
+(t-receive, b-recieve):
+-4.38e+00 0.00e+00 
+-3.50e+00 8.75e-01 
+
+
+=========Process #1(1;0)==========
+Top-neighbour is #-2
+Bottom-neighbour is #-2
+Left-neighbour is #0
+Right-neighbour is #-2
+Curr-matrix:
+-1.00e+00 -8.75e-01 
+-1.25e-01 -6.00e-06 
+-6.00e-06 1.25e-01 
+1.25e-01 2.50e-01 
+
+Target-matrix:
+-1.00e+00 -8.75e-01 
+-1.25e-01 0.00e+00 
+0.00e+00 1.25e-01 
+1.25e-01 2.50e-01 
+
+send-receive buffers 
+(l-receive, r-recieve):
+-1.13e+00 0.00e+00 
+-2.50e-01 8.75e-01 
+-1.25e-01 1.00e+00 
+-2.50e-06 1.12e+00 
+
+(t-receive, b-recieve):
+-4.38e+00 0.00e+00 
+-3.50e+00 8.75e-01 
+
+3.279919e-10
+3.279919e-10
+
+=========Process #0(0;0)==========
+Top-neighbour is #-2
+Bottom-neighbour is #-2
+Left-neighbour is #-2
+Right-neighbour is #1
+Curr-matrix:
+-2.00e+00 -1.12e+00 
+-1.12e+00 -2.50e-01 
+-1.00e+00 -1.25e-01 
+-8.75e-01 -6.00e-06 
+
+Target-matrix:
+-2.00e+00 -1.12e+00 
+-1.12e+00 -2.50e-01 
+-1.00e+00 -1.25e-01 
+-8.75e-01 0.00e+00 
+
+send-receive buffers 
+(l-receive, r-recieve):
+-4.38e+00 -1.00e+00 
+-3.50e+00 -1.25e-01 
+-3.38e+00 -6.00e-06 
+-3.25e+00 1.25e-01 
+
+(t-receive, b-recieve):
+-4.38e+00 0.00e+00 
+-3.50e+00 8.75e-01 
+
+
+=========Process #1(1;0)==========
+Top-neighbour is #-2
+Bottom-neighbour is #-2
+Left-neighbour is #0
+Right-neighbour is #-2
+Curr-matrix:
+-1.00e+00 -8.75e-01 
+-1.25e-01 -6.00e-06 
+-6.00e-06 1.25e-01 
+1.25e-01 2.50e-01 
+
+Target-matrix:
+-1.00e+00 -8.75e-01 
+-1.25e-01 0.00e+00 
+0.00e+00 1.25e-01 
+1.25e-01 2.50e-01 
+
+send-receive buffers 
+(l-receive, r-recieve):
+-1.12e+00 0.00e+00 
+-2.50e-01 8.75e-01 
+-1.25e-01 1.00e+00 
+-6.00e-06 1.12e+00 
+
+(t-receive, b-recieve):
+-4.38e+00 0.00e+00 
+-3.50e+00 8.75e-01 
+

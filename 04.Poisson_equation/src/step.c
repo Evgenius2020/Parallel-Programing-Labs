@@ -1,16 +1,17 @@
 #include <math.h>   // pow()
 #include <stdlib.h> // abs()
+#include <stdio.h>
 #include "data_types.h"
 
 void calculate_next_matrix(Parameters parameters, Local_Data local_data)
 {
-    unsigned i, j;
+    int i, j;
     for (i = 0; i < local_data.matrix_height; i++)
     {
         for (j = 0; j < local_data.matrix_width; j++)
         {
-            double phi_center = local_data.curr_matrix
-                                    [i * local_data.matrix_width + j];
+            double phi_center =
+                local_data.curr_matrix[i * local_data.matrix_width + j];
 
             double phi_top =
                 (i - 1 == -1)
@@ -33,8 +34,10 @@ void calculate_next_matrix(Parameters parameters, Local_Data local_data)
             double phi_next =
                 ((phi_left + phi_right - 2 * phi_center) / pow(parameters.x_step, 2) +
                  (phi_top + phi_bottom - 2 * phi_center) / pow(parameters.y_step, 2) -
-                 local_data.target_matrix[i * local_data.matrix_width + j]) /
-                (2 / pow(parameters.x_step, 2) + 2 / pow(parameters.y_step, 2));
+                 local_data.rho_matrix[i * local_data.matrix_width + j]) /
+                (2 / pow(parameters.x_step, 2) +
+                 2 / pow(parameters.y_step, 2) +
+                 parameters.a_coeff);
             local_data.next_matrix[i * local_data.matrix_width + j] = phi_next;
         }
     }
@@ -43,24 +46,25 @@ void calculate_next_matrix(Parameters parameters, Local_Data local_data)
 double apply_next_matrix(Local_Data local_data)
 {
     unsigned i, j;
-    double max_delta_phi = 0;
+    double max_delta = 0;
     for (i = 0; i < local_data.matrix_height; i++)
     {
         for (j = 0; j < local_data.matrix_width; j++)
         {
+            double next_phi =
+                local_data.next_matrix[i * local_data.matrix_width + j];
             double *curr_phi =
                 &(local_data.curr_matrix[i * local_data.matrix_width + j]);
-            double next_phi = local_data.next_matrix[i * local_data.matrix_width + j];
-            double delta_phi = sqrt(pow(*curr_phi - next_phi, 2));
-            if (delta_phi > max_delta_phi)
+            double delta = sqrt(pow(next_phi - *curr_phi, 2));
+            if (delta > max_delta)
             {
-                max_delta_phi = delta_phi;
+                max_delta = delta;
             }
             *curr_phi = next_phi;
         }
     }
 
-    return max_delta_phi;
+    return max_delta;
 }
 
 #define TOP_BOT_TAG 1
@@ -71,8 +75,6 @@ double apply_next_matrix(Local_Data local_data)
 void resolve_neighbors(Cart_Data cart_data, Local_Data local_data,
                        MPI_Datatype column_datatype)
 {
-    unsigned i;
-
     // ====== Left neighbour. ===========================================================
     if (cart_data.Neighbors.left >= 0)
     {
@@ -122,23 +124,23 @@ void resolve_neighbors(Cart_Data cart_data, Local_Data local_data,
     }
     // ----------------------------------------------------------------------------------
 }
-#include <stdio.h>
 
-void compare_max_delta_phi(double *max_delta_phi, MPI_Comm comm)
+void reduce_max_delta_phi(double *max_delta, MPI_Comm comm)
 {
     double recv_buf;
-    MPI_Allreduce(max_delta_phi, &recv_buf, 1, MPI_DOUBLE, MPI_MAX, comm);
-    *max_delta_phi = recv_buf;
+    MPI_Allreduce(max_delta, &recv_buf, 1, MPI_DOUBLE, MPI_MAX, comm);
+    *max_delta = recv_buf;
 }
+
 int step(Parameters parameters, Cart_Data cart_data, Local_Data local_data,
          MPI_Datatype column_datatype)
 {
     resolve_neighbors(cart_data, local_data, column_datatype);
     calculate_next_matrix(parameters, local_data);
-    double max_delta_phi = apply_next_matrix(local_data);
-    compare_max_delta_phi(&max_delta_phi, cart_data.comm);
-    printf("%e ", max_delta_phi);
-    if (parameters.convergence < max_delta_phi)
+    double max_delta = apply_next_matrix(local_data);
+    reduce_max_delta_phi(&max_delta, cart_data.comm);
+    printf("%e\n", max_delta);
+    if (parameters.convergence < max_delta)
     {
         return 1;
     }

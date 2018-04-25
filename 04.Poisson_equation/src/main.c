@@ -2,7 +2,6 @@
 #include "initialization.h"
 #include "step.h"
 #include "data_types.h"
-#include <stdio.h>
 
 void finalize_local_data(Local_Data local_data);
 void print_local_data(Cart_Data cart_data, Local_Data local_data);
@@ -22,10 +21,9 @@ void main(int argc, char *argv[])
     MPI_Type_commit(&column_datatype);
 
     while (step(parameters, cart_data, local_data, column_datatype))
-    // {
-    //     print_local_data(cart_data, local_data);
-    // }
-    ;
+    {
+        print_local_data(cart_data, local_data);
+    }
     print_local_data(cart_data, local_data);
 
     finalize_local_data(local_data);

@@ -12,6 +12,8 @@ typedef struct Parameters
     double x_step;
     double y_step;
     double convergence;
+    double a_coeff;
+    double (*rho)(double x, double y);
     double (*phi)(double x, double y);
 } Parameters;
 
@@ -27,8 +29,8 @@ typedef struct Cart_Data
     } Size;
     struct
     {
-        unsigned x;
-        unsigned y;
+        int x;
+        int y;
     } Pos;
     struct
     {
@@ -41,9 +43,10 @@ typedef struct Cart_Data
 
 typedef struct Local_Data
 {
-    double *target_matrix;
     double *curr_matrix;
     double *next_matrix;
+    double *phi_matrix;
+    double *rho_matrix;
     unsigned matrix_height;
     unsigned matrix_width;
     // ===== Start point of working range. ==============================================
