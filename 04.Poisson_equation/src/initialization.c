@@ -50,14 +50,14 @@ double rho(double x, double y)
 
 void initialize_parameters(Parameters *parameters)
 {
-    parameters->x_start = -1;
-    parameters->y_start = -1;
-    parameters->x_range = 2;
-    parameters->y_range = 2;
-    parameters->x_step = 0.5;
-    parameters->y_step = 0.5;
-    parameters->convergence = 10e-8;
-    parameters->a_coeff = 10e5;
+    parameters->x_start = -15;
+    parameters->y_start = -15;
+    parameters->x_range = 30;
+    parameters->y_range = 30;
+    parameters->x_step = 0.125;
+    parameters->y_step = 0.125;
+    parameters->convergence = 1e-8;
+    parameters->a_coeff = 1e5;
     parameters->phi = phi;
     parameters->rho = rho;
 }
@@ -93,7 +93,6 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
 
     // ====== Building working matrixes and exchange buffers. ===========================
     double *curr_matrix = calloc(sizeof(double), matrix_width * matrix_height);
-    double *next_matrix = calloc(sizeof(double), matrix_width * matrix_height);
     double *receive_buffer_bottom = calloc(sizeof(double), matrix_width);
     double *receive_buffer_top = calloc(sizeof(double), matrix_width);
     double *receive_buffer_left = calloc(sizeof(double), matrix_height);
@@ -103,37 +102,37 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
     // ====== Setting up default phi-values for edge points. ============================
     if (cart_data.Neighbors.left < 0)
     {
-        double x = parameters.x_start - parameters.x_step;
+        double x = x_local_start - parameters.x_step;
         for (i = 0; i < matrix_height; i++)
         {
-            double y = parameters.y_start + parameters.y_step * i;
+            double y = y_local_start + parameters.y_step * i;
             receive_buffer_left[i] = parameters.phi(x, y);
         }
     }
     if (cart_data.Neighbors.right < 0)
     {
-        double x = parameters.x_start + parameters.x_range;
+        double x = x_local_start + x_local_range_size;
         for (i = 0; i < matrix_height; i++)
         {
-            double y = parameters.y_start + parameters.y_step * i;
+            double y = y_local_start + parameters.y_step * i;
             receive_buffer_right[i] = parameters.phi(x, y);
         }
     }
     if (cart_data.Neighbors.top < 0)
     {
-        double y = parameters.y_start - parameters.y_step;
+        double y = y_local_start - parameters.y_step;
         for (i = 0; i < matrix_width; i++)
         {
-            double x = parameters.x_start + parameters.x_step * i;
+            double x = x_local_start + parameters.x_step * i;
             receive_buffer_top[i] = parameters.phi(x, y);
         }
     }
     if (cart_data.Neighbors.bottom < 0)
     {
-        double y = parameters.y_start + parameters.y_range;
+        double y = y_local_start + y_local_range_size;
         for (i = 0; i < matrix_width; i++)
         {
-            double x = parameters.x_start + parameters.x_step * i;
+            double x = x_local_start + parameters.x_step * i;
             receive_buffer_bottom[i] = parameters.phi(x, y);
         }
     }
@@ -144,7 +143,6 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
     local_data->phi_matrix = phi_matrix;
     local_data->rho_matrix = rho_matrix;
     local_data->curr_matrix = curr_matrix;
-    local_data->next_matrix = next_matrix;
     local_data->Neighbors.top = receive_buffer_top;
     local_data->Neighbors.bottom = receive_buffer_bottom;
     local_data->Neighbors.left = receive_buffer_left;

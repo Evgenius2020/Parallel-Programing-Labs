@@ -44,7 +44,6 @@ typedef struct Cart_Data
 typedef struct Local_Data
 {
     double *curr_matrix;
-    double *next_matrix;
     double *phi_matrix;
     double *rho_matrix;
     unsigned matrix_height;

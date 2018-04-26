@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <stdio.h>
 #include "initialization.h"
 #include "step.h"
 #include "data_types.h"
@@ -20,11 +21,18 @@ void main(int argc, char *argv[])
                     MPI_DOUBLE, &column_datatype);
     MPI_Type_commit(&column_datatype);
 
-    while (step(parameters, cart_data, local_data, column_datatype))
+    double max_delta;
+    do
     {
-        print_local_data(cart_data, local_data);
-    }
-    print_local_data(cart_data, local_data);
+        max_delta = step(parameters, cart_data, local_data, column_datatype);
+        if (cart_data.comm_id == 0)
+        {
+            printf("%e\n", max_delta);
+        }
+        // Use it for debugging.
+        //
+        // print_local_data(cart_data, local_data);
+    } while (parameters.convergence < max_delta);
 
     finalize_local_data(local_data);
     MPI_Type_free(&column_datatype);
