@@ -30,7 +30,8 @@ void *tasks_execution(void *info_raw)
         if (*(info->current_task) <= *(info->last_task))
         {
             *(info->is_waiting) = 0;
-            printf("Proc[%d].Executor: Started a task (%d sec. aprox).\n", info->comm_id, info->tasks[*(info->current_task)]);
+            printf("Proc[%d].Executor: Started a task (%d sec. aprox).\n",
+                   info->comm_id, info->tasks[*(info->current_task)]);
             sleep(info->tasks[*(info->current_task)]);
             *(info->current_task) += 1;
             printf("Proc[%d].Executor: Finished a task.\n", info->comm_id);
@@ -39,7 +40,8 @@ void *tasks_execution(void *info_raw)
         {
             if (*(info->is_waiting) == 0)
             {
-                printf("Proc[%d].Executor: Completed %d tasks. Waiting mode...\n", info->comm_id, *(info->last_task) + 1);
+                printf("Proc[%d].Executor: Completed %d tasks. Waiting mode...\n",
+                       info->comm_id, *(info->last_task) + 1);
                 *(info->is_waiting) = 1;
             }
             else
@@ -128,12 +130,16 @@ void *tasks_managing(void *info_raw)
     int *requests = malloc(sizeof(int) * info->comm_size);
     while (1)
     {
-        MPI_Allreduce(info->is_waiting, &total_waiting, info->comm_size, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+        // ======== If all procs are waiting, then pool is complete. ====================
+        MPI_Allreduce(info->is_waiting, &total_waiting, info->comm_size, MPI_INT,
+                      MPI_SUM, MPI_COMM_WORLD);
         if (total_waiting == info->comm_size)
         {
             break;
         }
+        // ------------------------------------------------------------------------------
 
+        // ======== Creating a vector of requests. ======================================
         int request;
         if (*(info->is_waiting))
         {
@@ -150,40 +156,45 @@ void *tasks_managing(void *info_raw)
                 request = NO_FREE_TASKS_CODE;
             }
         }
-
         MPI_Allgather(&request, 1, MPI_INT, requests, 1, MPI_INT, MPI_COMM_WORLD);
+        // ------------------------------------------------------------------------------
+
+        // ======== Requests processing. ================================================
         if (*(info->is_waiting))
         {
-            int receiver_index = get_receiver_index(requests, info->comm_size, info->comm_id);
-            int sender_index = get_nth_sender_index(requests, info->comm_size, receiver_index);
-            if (sender_index == -1)
+            // Trying to find a sharing process for this process.
+            int receiver_index =
+                get_receiver_index(requests, info->comm_size, info->comm_id);
+            int sender_index =
+                get_nth_sender_index(requests, info->comm_size, receiver_index);
+            if (sender_index != -1)
             {
-                // printf("Manager[%d]. No free task available.\n", info->comm_id);
-            }
-            else
-            {
-                *(info->last_task) += 1;                
+                *(info->last_task) += 1;
                 info->tasks[*(info->last_task)] = requests[sender_index];
-                printf("Manager[%d]. Proc[%d] shared a %d-task\n", info->comm_id, sender_index, requests[sender_index]);                
+                printf("Manager[%d]. Received a %d-task from Proc[%d]\n",
+                       info->comm_id, sender_index, requests[sender_index]);
             }
         }
         else if (*(info->current_task) != *(info->last_task))
         {
-            int sender_index = get_sender_index(requests, info->comm_size, info->comm_id);
-            int receiver_index = get_nth_receiver_index(requests, info->comm_size, sender_index);
-            if (receiver_index == -1)
-            {
-                // printf("Manager[%d]. No waiting procs.\n", info->comm_id);
-            }
-            else
+            // Trying to find a receving process for this process.
+            int sender_index =
+                get_sender_index(requests, info->comm_size, info->comm_id);
+            int receiver_index =
+                get_nth_receiver_index(requests, info->comm_size, sender_index);
+            if (receiver_index != -1)
             {
                 *(info->last_task) -= 1;
-                printf("Manager[%d]. Sent a %d-task to Proc[%d]\n", info->comm_id, requests[info->comm_id], receiver_index);                
+                printf("Manager[%d]. Sent a %d-task to Proc[%d]\n",
+                       info->comm_id, requests[info->comm_id], receiver_index);
             }
         }
+        // ------------------------------------------------------------------------------
+
         sleep(1);
     }
     *(info->is_poolComplete) = 1;
+    free(requests);
 }
 
 void main(int argc, char *argv[])
