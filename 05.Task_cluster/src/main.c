@@ -220,14 +220,14 @@ void main(int argc, char *argv[])
     unsigned last_task = TASKS_POOL_SIZE - 1;
     unsigned current_task = 0;
     unsigned is_waiting = 0;
-    unsigned is_poolComplete = 0;
+    unsigned is_pool_complete = 0;
     info.comm_id = comm_id;
     info.comm_size = comm_size;
     info.current_task = &current_task;
     info.last_task = &last_task;
     info.tasks = tasks;
     info.is_waiting = &is_waiting;
-    info.is_poolComplete = &is_poolComplete;
+    info.is_poolComplete = &is_pool_complete;
     pthread_create(&tasks_executor, &attrs, tasks_execution, &info);
     pthread_create(&tasks_manager, &attrs, tasks_managing, &info);
     pthread_attr_destroy(&attrs);
