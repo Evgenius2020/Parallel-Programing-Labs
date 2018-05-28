@@ -16,18 +16,8 @@ void print_local_data(Cart_Data cart_data, Local_Data local_data)
             printf("Bottom-neighbour is #%d\n", cart_data.Neighbors.bottom);
             printf("Left-neighbour is #%d\n", cart_data.Neighbors.left);
             printf("Right-neighbour is #%d\n", cart_data.Neighbors.right);
+
             printf("Curr-matrix:\n");
-            for (i = 0; i < local_data.matrix_height; i++)
-            {
-                for (j = 0; j < local_data.matrix_width; j++)
-                {
-                    printf("%.2e ",
-                           local_data.curr_matrix[i * local_data.matrix_width + j]);
-                }
-                printf("\n");
-            }
-            printf("\n");
-            printf("Target-matrix:\n");
             for (i = 0; i < local_data.matrix_height; i++)
             {
                 for (j = 0; j < local_data.matrix_width; j++)
@@ -40,7 +30,6 @@ void print_local_data(Cart_Data cart_data, Local_Data local_data)
             printf("\n");
 
             printf("send-receive buffers \n");
-
             printf("(l-receive, r-recieve):\n");
             for (i = 0; i < local_data.matrix_height; i++)
             {
@@ -49,7 +38,6 @@ void print_local_data(Cart_Data cart_data, Local_Data local_data)
                 printf("\n");
             }
             printf("\n");
-
             printf("(t-receive, b-recieve):\n");
             for (i = 0; i < local_data.matrix_width; i++)
             {

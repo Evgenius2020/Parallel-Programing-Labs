@@ -91,8 +91,8 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
     }
     // ----------------------------------------------------------------------------------
 
-    // ====== Building working matrixes and exchange buffers. ===========================
-    double *curr_matrix = calloc(sizeof(double), matrix_width * matrix_height);
+    // ====== Building working matrix and exchange buffers. ===========================
+    double *phi_matrix_next = calloc(sizeof(double), matrix_width * matrix_height);
     double *receive_buffer_bottom = calloc(sizeof(double), matrix_width);
     double *receive_buffer_top = calloc(sizeof(double), matrix_width);
     double *receive_buffer_left = calloc(sizeof(double), matrix_height);
@@ -141,8 +141,8 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
     local_data->matrix_height = matrix_height;
     local_data->matrix_width = matrix_width;
     local_data->phi_matrix = phi_matrix;
+    local_data->phi_matrix_next = phi_matrix_next;    
     local_data->rho_matrix = rho_matrix;
-    local_data->curr_matrix = curr_matrix;
     local_data->Neighbors.top = receive_buffer_top;
     local_data->Neighbors.bottom = receive_buffer_bottom;
     local_data->Neighbors.left = receive_buffer_left;
