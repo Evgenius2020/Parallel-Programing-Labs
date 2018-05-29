@@ -40,7 +40,7 @@ void initialize_cart_data(Cart_Data *cart_data)
 
 double phi(double x, double y)
 {
-    return pow(x, 3) + pow(y, 3);
+    return pow(x, 2) + pow(y, 2);
 }
 
 double rho(double x, double y)
@@ -50,10 +50,10 @@ double rho(double x, double y)
 
 void initialize_parameters(Parameters *parameters)
 {
-    parameters->x_start = -15;
-    parameters->y_start = -15;
-    parameters->x_range = 30;
-    parameters->y_range = 30;
+    parameters->x_start = -500;
+    parameters->y_start = -500;
+    parameters->x_range = 1000;
+    parameters->y_range = 1000;
     parameters->x_step = 0.125;
     parameters->y_step = 0.125;
     parameters->convergence = 1e-8;
@@ -85,7 +85,6 @@ void initialize_local_data(Parameters parameters, Cart_Data cart_data,
         {
             double x = x_local_start + j * parameters.x_step;
             double y = y_local_start + i * parameters.y_step;
-            phi_matrix[i * matrix_width + j] = parameters.phi(x, y);
             rho_matrix[i * matrix_width + j] = parameters.rho(x, y);
         }
     }

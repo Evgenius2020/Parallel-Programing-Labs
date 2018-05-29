@@ -1,7 +1,7 @@
 #ifndef DATA_TYPES
 #define DATA_TYPES
 
-#include <mpi.h>
+#include "mpich/mpi.h"
 
 typedef struct Parameters
 {
