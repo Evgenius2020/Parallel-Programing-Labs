@@ -1,5 +1,9 @@
+clean:
+	rm -rf ./out
+
 build:
-	mpicc ./src/*.c -lm
+	mkdir -p out
+	mpicc ./src/*.c -lm -o out/a.out
 
 run:
-	mpiexec -n 4 ./a.out
+	mpiexec -n 4 ./out/a.out

@@ -1,4 +1,4 @@
-#include <mpi.h>
+#include "mpich/mpi.h"
 #include <stdlib.h>
 #include <string.h>
 #include "linear_equations_solving.h"

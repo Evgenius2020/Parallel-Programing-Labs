@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h> // atoi
 #include "matrix_operations.h"
-#include "mpi.h"
+#include "mpich/mpi.h"
 
 void main(int argc, char *argv[])
 {

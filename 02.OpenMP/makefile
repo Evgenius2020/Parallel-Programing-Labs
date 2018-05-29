@@ -12,3 +12,6 @@ build_omp_hard:
 build_omp_light:
 	mkdir -p ./out
 	gcc src/*.c -lm -o out/a.out -D BUILD_OMP_LIGHT -fopenmp
+
+run:
+	./out/a.out 1000

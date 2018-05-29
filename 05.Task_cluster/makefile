@@ -1,11 +1,17 @@
+clean:
+	rm -rf ./out
+
 build:
-	mpicc.mpich ./src/*.c -pthread
+	mkdir -p out
+	mpicc.mpich ./src/*.c -pthread -o out/a.out
 
 build_silent:
-	mpicc.mpich ./src/*.c -pthread -D SILENT
+	mkdir -p out
+	mpicc.mpich ./src/*.c -pthread -D SILENT -o out/a.out
 
 build_unoptimized:
-	mpicc.mpich ./src/*.c -pthread -D SILENT -D UNOPTIMIZED
+	mkdir -p out
+	mpicc.mpich ./src/*.c -pthread -D SILENT -D UNOPTIMIZED -o out/a.out
 
 run:
-	mpiexec.mpich -n 6 ./a.out
+	mpiexec.mpich -n 6 ./out/a.out

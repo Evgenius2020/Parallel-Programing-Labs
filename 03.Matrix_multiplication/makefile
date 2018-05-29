@@ -3,7 +3,7 @@ clear:
 
 build:
 	mkdir -p out
-	mpicc ./src/*.* -lm -o ./out/a.out
+	mpicc.mpich ./src/*.* -lm -o ./out/a.out
 
 run:
-	mpirun -n 4 ./out/a.out
+	mpiexec.mpich -n 4 ./out/a.out 50 50 50
